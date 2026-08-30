@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  ExpenseTracker
 //
-//  Created by Asal on 8/15/26.
+//  Created by Asal on 8/16/26.
 //
 
 import SwiftUI
@@ -20,5 +20,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    HomeView()
 }
