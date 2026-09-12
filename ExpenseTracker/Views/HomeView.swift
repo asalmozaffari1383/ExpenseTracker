@@ -90,7 +90,12 @@ struct HomeView: View {
                         VStack(spacing: 12) {
                             ForEach(expenses) { expense in
                                 NavigationLink {
-                                    ExpenseDetailView(expense: expense)
+                                    ExpenseDetailView(
+                                        expense: expense,
+                                        theme: theme,
+                                        onUpdate: updateExpense,
+                                        onDelete: deleteExpense
+                                    )
                                 } label: {
                                     ExpenseRow(
                                         expense: expense,
@@ -98,6 +103,13 @@ struct HomeView: View {
                                     )
                                 }
                                 .buttonStyle(.plain)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        deleteExpense(expense)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                             }
                         }
                     }
@@ -112,6 +124,22 @@ struct HomeView: View {
                 expenses.insert(newExpense, at: 0)
             }
         }
+    }
+
+    private func updateExpense(_ updatedExpense: Expense) {
+        guard let index = expenses.firstIndex(where: { $0.id == updatedExpense.id }) else {
+            return
+        }
+
+        expenses[index] = updatedExpense
+    }
+
+    private func deleteExpense(_ expense: Expense) {
+        deleteExpense(expense.id)
+    }
+
+    private func deleteExpense(_ id: UUID) {
+        expenses.removeAll { $0.id == id }
     }
 }
 

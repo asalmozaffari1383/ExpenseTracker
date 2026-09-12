@@ -11,12 +11,30 @@ struct AddExpenseView: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    var onSave: (Expense) -> Void
+    let existingExpense: Expense?
+    let theme: AppTheme
+    let onSave: (Expense) -> Void
     
-    @State private var title: String = ""
-    @State private var amountString: String = ""
-    @State private var selectedCategory: Category = .food
-    @State private var date: Date = Date()
+    @State private var title: String
+    @State private var amountString: String
+    @State private var selectedCategory: Category
+    @State private var date: Date
+
+    init(
+        expense: Expense? = nil,
+        theme: AppTheme = .dark,
+        onSave: @escaping (Expense) -> Void
+    ) {
+        self.existingExpense = expense
+        self.theme = theme
+        self.onSave = onSave
+        _title = State(initialValue: expense?.title ?? "")
+        _amountString = State(
+            initialValue: expense.map { String(format: "%.2f", $0.amount) } ?? ""
+        )
+        _selectedCategory = State(initialValue: expense?.category ?? .food)
+        _date = State(initialValue: expense?.date ?? Date())
+    }
     
     private var isValid: Bool {
         guard !title
@@ -40,12 +58,14 @@ struct AddExpenseView: View {
                         "Title (e.g. Coffee)",
                         text: $title
                     )
+                    .foregroundStyle(theme.text)
                     
                     TextField(
                         "Amount ($)",
                         text: $amountString
                     )
                     .keyboardType(.decimalPad)
+                    .foregroundStyle(theme.text)
                     
                     Picker(
                         "Category",
@@ -59,15 +79,21 @@ struct AddExpenseView: View {
                             .tag(category)
                         }
                     }
+                    .foregroundStyle(theme.text)
                     
                     DatePicker(
                         "Date",
                         selection: $date,
                         displayedComponents: .date
                     )
+                    .foregroundStyle(theme.text)
                 }
+                .listRowBackground(theme.surface)
             }
-            .navigationTitle("New Expense")
+            .scrollContentBackground(.hidden)
+            .background(theme.background)
+            .tint(theme.primary)
+            .navigationTitle(existingExpense == nil ? "New Expense" : "Edit Expense")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 
@@ -86,7 +112,8 @@ struct AddExpenseView: View {
                             return
                         }
                         
-                        let newExpense = Expense(
+                        let savedExpense = Expense(
+                            id: existingExpense?.id ?? UUID(),
                             title: title.trimmingCharacters(
                                 in: .whitespacesAndNewlines
                             ),
@@ -95,7 +122,7 @@ struct AddExpenseView: View {
                             date: date
                         )
                         
-                        onSave(newExpense)
+                        onSave(savedExpense)
                         dismiss()
                     }
                     .disabled(!isValid)
