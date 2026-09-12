@@ -10,16 +10,17 @@ import SwiftUI
 struct ExpenseRow: View {
     
     let expense: Expense
+    let theme: AppTheme
     
     var body: some View {
         HStack {
             CategoryIcon(category: expense.category)
-                .foregroundStyle(AppTheme.primary)
+                .foregroundStyle(theme.primary)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(expense.title)
                     .font(.headline)
-                    .foregroundStyle(AppTheme.text)
+                    .foregroundStyle(theme.text)
                 
                 HStack(spacing: 4) {
                     Text(expense.category.rawValue.capitalized)
@@ -29,14 +30,14 @@ struct ExpenseRow: View {
                     Text(expense.date, style: .date)
                 }
                 .font(.subheadline)
-                .foregroundStyle(AppTheme.secondaryText)
+                .foregroundStyle(theme.secondaryText)
             }
             
             Spacer()
             
             Text("$\(expense.amount, specifier: "%.2f")")
                 .font(.headline)
-                .foregroundStyle(AppTheme.text)
+                .foregroundStyle(theme.text)
         }
         .padding(.vertical, 8)
     }
