@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ThemeMode: Equatable {
+enum ThemeMode: String, Equatable {
     case light
     case dark
 }

@@ -9,12 +9,13 @@ struct DashboardView: View {
 
     @Binding var expenses: [Expense]
     @Binding var incomes: [Income]
-    @Binding var monthlyBudget: Double
     @Binding var themeMode: ThemeMode
-    let onSeeAllTapped: () -> Void
 
-    @State private var showingAddExpense = false
-    @State private var showingAddIncome = false
+    let onSeeAllTapped: () -> Void
+    let onAddExpenseTapped: () -> Void
+    let onAddIncomeTapped: () -> Void
+
+    @AppStorage("monthlyBudgetLimit") private var monthlyBudgetLimit: Double = 2_000.0
 
     private var theme: AppTheme {
         themeMode == .dark ? .dark : .light
@@ -33,12 +34,12 @@ struct DashboardView: View {
     }
 
     private var budgetRemaining: Double {
-        monthlyBudget - totalExpense
+        monthlyBudgetLimit - totalExpense
     }
 
     private var budgetProgress: Double {
-        guard monthlyBudget > 0 else { return 0 }
-        return min(max(totalExpense / monthlyBudget, 0), 1)
+        guard monthlyBudgetLimit > 0 else { return 0 }
+        return min(max(totalExpense / monthlyBudgetLimit, 0), 1)
     }
 
     private var dailyAverageSpend: Double? {
@@ -50,6 +51,7 @@ struct DashboardView: View {
     private var recentTransactions: [TransactionRowItem] {
         let transactions = expenses.map(TransactionRowItem.expense)
             + incomes.map(TransactionRowItem.income)
+
         return transactions
             .sorted { transactionDate($0) > transactionDate($1) }
             .prefix(5)
@@ -74,7 +76,7 @@ struct DashboardView: View {
                         )
 
                         BudgetProgressCard(
-                            monthlyBudget: monthlyBudget,
+                            monthlyBudget: monthlyBudgetLimit,
                             totalExpense: totalExpense,
                             budgetRemaining: budgetRemaining,
                             budgetProgress: budgetProgress,
@@ -84,8 +86,8 @@ struct DashboardView: View {
 
                         QuickActionButtons(
                             theme: theme,
-                            onAddIncome: { showingAddIncome = true },
-                            onAddExpense: { showingAddExpense = true }
+                            onAddIncome: onAddIncomeTapped,
+                            onAddExpense: onAddExpenseTapped
                         )
 
                         recentActivity
@@ -96,22 +98,7 @@ struct DashboardView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
         }
-        .sheet(isPresented: $showingAddExpense) {
-            AddExpenseView(theme: theme) { newExpense in
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                    expenses.insert(newExpense, at: 0)
-                }
-            }
-        }
-        .sheet(isPresented: $showingAddIncome) {
-            AddIncomeView(theme: theme) { newIncome in
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                    incomes.insert(newIncome, at: 0)
-                }
-            }
-        }
-        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: expenses.count)
-        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: incomes.count)
+        .preferredColorScheme(theme.isDark ? .dark : .light)
     }
 
     private var header: some View {
@@ -150,7 +137,9 @@ struct DashboardView: View {
                 Text("Recent Activity")
                     .font(.headline)
                     .foregroundStyle(theme.text)
+
                 Spacer()
+
                 Button(action: onSeeAllTapped) {
                     Label("See All", systemImage: "chevron.right")
                         .font(.subheadline.weight(.semibold))

@@ -11,6 +11,11 @@ struct AddIncomeView: View {
 
     let theme: AppTheme
     let onSave: (Income) -> Void
+    @AppStorage("currencyCode") private var currencyCode = AppCurrency.usd.rawValue
+
+    private var currency: AppCurrency {
+        AppCurrency(rawValue: currencyCode) ?? .usd
+    }
 
     @State private var title = ""
     @State private var amountString = ""
@@ -45,7 +50,7 @@ struct AddIncomeView: View {
                         Divider().overlay(theme.surfaceElevated)
 
                         themedField("Amount", systemImage: "dollarsign") {
-                            TextField("0.00", text: $amountString)
+                            TextField("0.00 \(currency.inputSuffix)", text: $amountString)
                                 .keyboardType(.decimalPad)
                                 .foregroundStyle(theme.text)
                         }

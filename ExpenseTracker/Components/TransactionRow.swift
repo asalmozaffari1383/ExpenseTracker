@@ -21,6 +21,11 @@ struct TransactionRow: View {
 
     let transaction: TransactionRowItem
     let theme: AppTheme
+    @AppStorage("currencyCode") private var currencyCode = AppCurrency.usd.rawValue
+
+    private var currency: AppCurrency {
+        AppCurrency(rawValue: currencyCode) ?? .usd
+    }
 
     private var title: String {
         switch transaction {
@@ -89,7 +94,7 @@ struct TransactionRow: View {
 
             Spacer()
 
-            Text("\(isIncome ? "+" : "-")\(amount, format: .currency(code: "USD"))")
+            Text("\(isIncome ? "+" : "-")\(amount.formattedCurrency(using: currency))")
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(accentColor)
         }

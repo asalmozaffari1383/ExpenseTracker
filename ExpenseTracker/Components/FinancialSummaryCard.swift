@@ -11,6 +11,11 @@ struct FinancialSummaryCard: View {
     let totalIncome: Double
     let totalExpense: Double
     let theme: AppTheme
+    @AppStorage("currencyCode") private var currencyCode = AppCurrency.usd.rawValue
+
+    private var currency: AppCurrency {
+        AppCurrency(rawValue: currencyCode) ?? .usd
+    }
 
     private var balanceColor: Color {
         balance >= 0 ? theme.success : theme.danger
@@ -24,7 +29,7 @@ struct FinancialSummaryCard: View {
                         .font(.subheadline)
                         .foregroundStyle(theme.secondaryText)
 
-                    Text(balance, format: .currency(code: "USD"))
+                    Text(balance.formattedCurrency(using: currency))
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(balanceColor)
                 }
@@ -91,7 +96,7 @@ struct FinancialSummaryCard: View {
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(theme.secondaryText)
-                Text(amount, format: .currency(code: "USD"))
+                Text(amount.formattedCurrency(using: currency))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(theme.text)
             }

@@ -13,6 +13,11 @@ struct BudgetProgressCard: View {
     let budgetProgress: Double
     let dailyAverageSpend: Double?
     let theme: AppTheme
+    @AppStorage("currencyCode") private var currencyCode = AppCurrency.usd.rawValue
+
+    private var currency: AppCurrency {
+        AppCurrency(rawValue: currencyCode) ?? .usd
+    }
 
     private var healthTitle: String {
         if monthlyBudget <= 0 { return "Set Budget" }
@@ -39,7 +44,7 @@ struct BudgetProgressCard: View {
                     Text("Monthly Budget")
                         .font(.headline)
                         .foregroundStyle(theme.text)
-                    Text("\(totalExpense, format: .currency(code: "USD")) spent of \(monthlyBudget, format: .currency(code: "USD"))")
+                    Text("\(totalExpense.formattedCurrency(using: currency)) spent of \(monthlyBudget.formattedCurrency(using: currency))")
                         .font(.caption)
                         .foregroundStyle(theme.secondaryText)
                 }
@@ -54,8 +59,9 @@ struct BudgetProgressCard: View {
                     .background(healthColor.opacity(0.14), in: Capsule())
             }
 
-            ProgressView(value: budgetProgress)
-                .tint(theme.primary)
+            // مهار پروگرس بین 0 تا 1 برای جلوگیری از باگ‌های رندر SwiftUI
+            ProgressView(value: min(max(budgetProgress, 0.0), 1.0))
+                .tint(healthColor)
                 .scaleEffect(y: 1.4, anchor: .center)
 
             HStack {
@@ -67,7 +73,7 @@ struct BudgetProgressCard: View {
 
                 Spacer()
 
-                Text(abs(budgetRemaining), format: .currency(code: "USD"))
+                Text(abs(budgetRemaining).formattedCurrency(using: currency))
                     .foregroundStyle(theme.text)
             }
             .font(.caption.weight(.medium))
@@ -77,7 +83,7 @@ struct BudgetProgressCard: View {
                     Image(systemName: "calendar")
                     Text("Daily average")
                     Spacer()
-                    Text(dailyAverageSpend, format: .currency(code: "USD"))
+                    Text(dailyAverageSpend.formattedCurrency(using: currency))
                         .foregroundStyle(theme.text)
                 }
                 .font(.caption)

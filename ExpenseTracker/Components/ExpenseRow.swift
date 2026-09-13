@@ -11,6 +11,11 @@ struct ExpenseRow: View {
     
     let expense: Expense
     let theme: AppTheme
+    @AppStorage("currencyCode") private var currencyCode = AppCurrency.usd.rawValue
+
+    private var currency: AppCurrency {
+        AppCurrency(rawValue: currencyCode) ?? .usd
+    }
     
     var body: some View {
         HStack {
@@ -35,7 +40,7 @@ struct ExpenseRow: View {
             
             Spacer()
             
-            Text("$\(expense.amount, specifier: "%.2f")")
+            Text(expense.amount.formattedCurrency(using: currency))
                 .font(.headline)
                 .foregroundStyle(theme.text)
         }

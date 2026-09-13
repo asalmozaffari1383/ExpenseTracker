@@ -15,8 +15,9 @@ struct MainTabView: View {
     }
 
     @State private var selectedTab: Tab = .dashboard
-    @State private var themeMode: ThemeMode = .dark
-    @State private var monthlyBudget = 2_000.0
+    @AppStorage("themeMode") private var themeModeRawValue = ThemeMode.dark.rawValue
+    @State private var showingAddExpense = false
+    @State private var showingAddIncome = false
     @State private var expenses: [Expense] = [
         Expense(title: "Coffee", amount: 5, category: .food, date: Date()),
         Expense(title: "Pizza", amount: 18.50, category: .food, date: Date()),
@@ -31,6 +32,17 @@ struct MainTabView: View {
         )
     ]
 
+    private var themeMode: ThemeMode {
+        ThemeMode(rawValue: themeModeRawValue) ?? .dark
+    }
+
+    private var themeModeBinding: Binding<ThemeMode> {
+        Binding(
+            get: { ThemeMode(rawValue: themeModeRawValue) ?? .dark },
+            set: { themeModeRawValue = $0.rawValue }
+        )
+    }
+
     private var theme: AppTheme {
         themeMode == .dark ? .dark : .light
     }
@@ -40,9 +52,10 @@ struct MainTabView: View {
             DashboardView(
                 expenses: $expenses,
                 incomes: $incomes,
-                monthlyBudget: $monthlyBudget,
-                themeMode: $themeMode,
-                onSeeAllTapped: { selectedTab = .expenses }
+                themeMode: themeModeBinding,
+                onSeeAllTapped: { selectedTab = .expenses },
+                onAddExpenseTapped: { showingAddExpense = true },
+                onAddIncomeTapped: { showingAddIncome = true }
             )
             .tag(Tab.dashboard)
             .tabItem {
@@ -55,16 +68,17 @@ struct MainTabView: View {
                     Label("Expenses", systemImage: "creditcard.fill")
                 }
 
-            AnalyticsPlaceholderView(theme: theme)
+            AnalyticsView(expenses: expenses, theme: theme)
                 .tag(Tab.analytics)
                 .tabItem {
                     Label("Analytics", systemImage: "chart.pie.fill")
                 }
 
             SettingsView(
-                themeMode: $themeMode,
-                monthlyBudget: $monthlyBudget,
-                theme: theme
+                themeMode: themeModeBinding,
+                theme: theme,
+                transactionCount: expenses.count + incomes.count,
+                onDeleteAllData: deleteAllData
             )
             .tag(Tab.settings)
             .tabItem {
@@ -76,6 +90,28 @@ struct MainTabView: View {
         .toolbarBackground(theme.surface, for: .tabBar)
         .toolbarColorScheme(themeMode == .dark ? .dark : .light, for: .tabBar)
         .preferredColorScheme(theme.isDark ? .dark : .light)
+        .sheet(isPresented: $showingAddExpense) {
+            AddExpenseView(theme: theme) { expense in
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    expenses.insert(expense, at: 0)
+                }
+            }
+        }
+        .sheet(isPresented: $showingAddIncome) {
+            AddIncomeView(theme: theme) { income in
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    incomes.insert(income, at: 0)
+                }
+            }
+        }
+    }
+
+    private func deleteAllData() {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            expenses.removeAll()
+            incomes.removeAll()
+        }
+        Haptics.light()
     }
 }
 

@@ -18,6 +18,11 @@ struct ExpenseDetailView: View {
     let theme: AppTheme
     let onUpdate: (Expense) -> Void
     let onDelete: (UUID) -> Void
+    @AppStorage("currencyCode") private var currencyCode = AppCurrency.usd.rawValue
+
+    private var currency: AppCurrency {
+        AppCurrency(rawValue: currencyCode) ?? .usd
+    }
 
     init(
         expense: Expense,
@@ -50,7 +55,7 @@ struct ExpenseDetailView: View {
                     .multilineTextAlignment(.center)
                     .foregroundStyle(theme.text)
 
-                Text(currentExpense.amount, format: .currency(code: "USD"))
+                Text(currentExpense.amount.formattedCurrency(using: currency))
                     .font(.system(size: 34, weight: .bold, design: .rounded))
                     .foregroundStyle(theme.text)
 
