@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct AppTheme {
+
+    let isDark: Bool
     
     let background: Color
     let surface: Color
@@ -27,6 +29,7 @@ struct AppTheme {
 extension AppTheme {
     
     static let dark = AppTheme(
+        isDark: true,
         background: Color(hex: "0D0F14"),
         surface: Color(hex: "151820"),
         surfaceElevated: Color(hex: "1C2029"),
@@ -43,6 +46,7 @@ extension AppTheme {
     )
     
     static let light = AppTheme(
+        isDark: false,
         background: Color(hex: "F5F7FA"),
         surface: Color(hex: "FFFFFF"),
         surfaceElevated: Color(hex: "E9EDF3"),

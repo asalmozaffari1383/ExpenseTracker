@@ -33,27 +33,46 @@ struct ExpenseDetailView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            
-            Text(currentExpense.category.displayName)
-                .font(.headline)
-                .foregroundStyle(theme.primary)
-            
-            Text(currentExpense.title)
-                .font(.largeTitle.bold())
-                .foregroundStyle(theme.text)
-            
-            Text("$\(currentExpense.amount, specifier: "%.2f")")
-                .font(.title)
-                .foregroundStyle(theme.text)
-            
-            Text(currentExpense.date, style: .date)
-                .foregroundStyle(theme.secondaryText)
+            VStack(spacing: 18) {
+                Image(systemName: currentExpense.category.iconName)
+                    .font(.title2)
+                    .foregroundStyle(theme.primary)
+                    .frame(width: 54, height: 54)
+                    .background(theme.primary.opacity(0.14), in: Circle())
+
+                Text(currentExpense.category.displayName.uppercased())
+                    .font(.caption.weight(.bold))
+                    .tracking(1.1)
+                    .foregroundStyle(theme.primary)
+
+                Text(currentExpense.title)
+                    .font(.largeTitle.bold())
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(theme.text)
+
+                Text(currentExpense.amount, format: .currency(code: "USD"))
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundStyle(theme.text)
+
+                Text(currentExpense.date, style: .date)
+                    .font(.subheadline)
+                    .foregroundStyle(theme.secondaryText)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 26)
+            .background(theme.surface, in: RoundedRectangle(cornerRadius: 22))
+            .overlay {
+                RoundedRectangle(cornerRadius: 22)
+                    .strokeBorder(theme.text.opacity(0.08), lineWidth: 1)
+            }
 
             Button(role: .destructive) {
                 showingDeleteConfirmation = true
             } label: {
                 Label("Delete Expense", systemImage: "trash")
+                    .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity)
+                    .padding(.vertical, 13)
             }
             .buttonStyle(.bordered)
             .tint(theme.danger)
@@ -63,6 +82,9 @@ struct ExpenseDetailView: View {
         .background(theme.background.ignoresSafeArea())
         .navigationTitle("Expense Details")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(theme.surface, for: .navigationBar)
+        .toolbarColorScheme(theme.isDark ? .dark : .light, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Edit") {
@@ -79,6 +101,7 @@ struct ExpenseDetailView: View {
         }
         .alert("Delete Expense?", isPresented: $showingDeleteConfirmation) {
             Button("Delete", role: .destructive) {
+                Haptics.light()
                 onDelete(currentExpense.id)
                 dismiss()
             }

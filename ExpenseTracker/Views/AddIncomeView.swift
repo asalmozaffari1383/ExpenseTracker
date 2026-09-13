@@ -29,33 +29,65 @@ struct AddIncomeView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Income Details") {
-                    TextField("Title (e.g. Monthly salary)", text: $title)
-                        .foregroundStyle(theme.text)
+            ScrollView {
+                VStack(spacing: 18) {
+                    Text("Add money coming into your accounts.")
+                        .font(.subheadline)
+                        .foregroundStyle(theme.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                    TextField("Amount ($)", text: $amountString)
-                        .keyboardType(.decimalPad)
-                        .foregroundStyle(theme.text)
+                    VStack(spacing: 0) {
+                        themedField("Title", systemImage: "text.alignleft") {
+                            TextField("e.g. Monthly salary", text: $title)
+                                .foregroundStyle(theme.text)
+                        }
 
-                    Picker("Source", selection: $selectedCategory) {
-                        ForEach(IncomeCategory.allCases) { category in
-                            Label(category.displayName, systemImage: category.iconName)
-                                .tag(category)
+                        Divider().overlay(theme.surfaceElevated)
+
+                        themedField("Amount", systemImage: "dollarsign") {
+                            TextField("0.00", text: $amountString)
+                                .keyboardType(.decimalPad)
+                                .foregroundStyle(theme.text)
+                        }
+
+                        Divider().overlay(theme.surfaceElevated)
+
+                        themedField("Source", systemImage: selectedCategory.iconName) {
+                            Picker("Source", selection: $selectedCategory) {
+                                ForEach(IncomeCategory.allCases) { category in
+                                    Text(category.displayName).tag(category)
+                                }
+                            }
+                            .labelsHidden()
+                            .foregroundStyle(theme.text)
+                            .tint(theme.primary)
+                        }
+
+                        Divider().overlay(theme.surfaceElevated)
+
+                        themedField("Date", systemImage: "calendar") {
+                            DatePicker("Date", selection: $date, displayedComponents: .date)
+                                .labelsHidden()
+                                .foregroundStyle(theme.text)
+                                .tint(theme.primary)
                         }
                     }
-                    .foregroundStyle(theme.text)
-
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
-                        .foregroundStyle(theme.text)
+                    .background(theme.surface, in: RoundedRectangle(cornerRadius: 18))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 18)
+                            .strokeBorder(theme.text.opacity(0.08), lineWidth: 1)
+                    }
                 }
-                .listRowBackground(theme.surface)
+                .padding()
             }
-            .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
             .background(theme.background)
             .tint(theme.primary)
             .navigationTitle("New Income")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(theme.surface, for: .navigationBar)
+            .toolbarColorScheme(theme.isDark ? .dark : .light, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -77,12 +109,34 @@ struct AddIncomeView: View {
                         )
 
                         onSave(newIncome)
+                        Haptics.light()
                         dismiss()
                     }
                     .disabled(!isValid)
                 }
             }
         }
+    }
+
+    private func themedField<Content: View>(
+        _ title: String,
+        systemImage: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .foregroundStyle(theme.success)
+                .frame(width: 22)
+
+            Text(title)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(theme.secondaryText)
+
+            Spacer(minLength: 8)
+            content()
+        }
+        .padding(.horizontal, 15)
+        .padding(.vertical, 14)
     }
 }
 
